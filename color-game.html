@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Color Game</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Arial Rounded MT Bold', 'Nunito', Arial, sans-serif;
+    transition: background-color 0.4s ease;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f8f8f8;
+    user-select: none;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    margin-top: 24px;
+    font-size: 2.4rem;
+    color: #333;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    transition: color 0.4s ease;
+  }
+
+  #color-name {
+    margin-top: 16px;
+    font-size: 5rem;
+    font-weight: bold;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    transition: color 0.4s ease, transform 0.3s ease;
+    color: #555;
+  }
+  #color-name.pop {
+    transform: scale(1.15);
+  }
+
+  #buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 18px;
+    margin: 30px auto;
+    max-width: 700px;
+    padding: 0 16px;
+  }
+
+  .color-btn {
+    width: 120px;
+    height: 120px;
+    border: 5px solid rgba(255,255,255,0.7);
+    border-radius: 24px;
+    cursor: pointer;
+    font-size: 1.15rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .color-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  }
+  .color-btn:active {
+    transform: scale(0.95);
+  }
+
+  #mic-btn {
+    margin-top: 10px;
+    margin-bottom: 30px;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 4px solid #555;
+    background: #fff;
+    font-size: 2.8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    transition: background 0.2s, transform 0.15s;
+  }
+  #mic-btn:hover { transform: scale(1.08); }
+  #mic-btn.listening {
+    background: #ff4444;
+    border-color: #ff4444;
+    animation: pulse 1s infinite;
+  }
+
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255,68,68,0.5); }
+    70%  { box-shadow: 0 0 0 20px rgba(255,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,68,68,0); }
+  }
+
+  #mic-label {
+    font-size: 1.1rem;
+    color: #777;
+    margin-bottom: 20px;
+    text-align: center;
+    min-height: 1.4em;
+  }
+
+  /* floating stars / shapes on color pick */
+  .star {
+    position: fixed;
+    font-size: 3rem;
+    pointer-events: none;
+    animation: float-up 1.2s ease-out forwards;
+    z-index: 999;
+  }
+  @keyframes float-up {
+    0%   { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+    100% { opacity: 0; transform: translateY(-200px) scale(1.5) rotate(40deg); }
+  }
+</style>
+</head>
+<body>
+
+<h1 id="title">Say a Color!</h1>
+<div id="color-name">...</div>
+
+<div id="buttons"></div>
+
+<button id="mic-btn" title="Press to speak">🎤</button>
+<div id="mic-label">Tap the mic and say a color!</div>
+
+<script>
+const COLORS = [
+  { name: 'Red',    hex: '#EE3333' },
+  { name: 'Blue',   hex: '#3366EE' },
+  { name: 'Green',  hex: '#33AA33' },
+  { name: 'Yellow', hex: '#F5D000' },
+  { name: 'Orange', hex: '#EE8811' },
+  { name: 'Purple', hex: '#9944CC' },
+  { name: 'Pink',   hex: '#EE55AA' },
+  { name: 'Brown',  hex: '#8B5E3C' },
+  { name: 'Black',  hex: '#222222' },
+  { name: 'White',  hex: '#F5F5F5' },
+];
+
+const buttonsEl = document.getElementById('buttons');
+const colorNameEl = document.getElementById('color-name');
+const titleEl = document.getElementById('title');
+const micBtn = document.getElementById('mic-btn');
+const micLabel = document.getElementById('mic-label');
+
+// Build color buttons
+COLORS.forEach(c => {
+  const btn = document.createElement('button');
+  btn.className = 'color-btn';
+  btn.style.backgroundColor = c.hex;
+  btn.textContent = c.name;
+  if (c.name === 'White' || c.name === 'Yellow') {
+    btn.style.color = '#333';
+    btn.style.textShadow = 'none';
+    btn.style.borderColor = '#ccc';
+  }
+  if (c.name === 'Black') {
+    btn.style.borderColor = '#555';
+  }
+  btn.addEventListener('click', () => pickColor(c));
+  buttonsEl.appendChild(btn);
+});
+
+function pickColor(c) {
+  // Background
+  document.body.style.backgroundColor = c.hex;
+
+  // Color name text
+  colorNameEl.textContent = c.name;
+  const textColor = (c.name === 'Black' || c.name === 'Brown' || c.name === 'Blue' || c.name === 'Purple')
+    ? '#fff' : '#222';
+  colorNameEl.style.color = textColor;
+  titleEl.style.color = textColor;
+
+  // Pop animation
+  colorNameEl.classList.remove('pop');
+  void colorNameEl.offsetWidth; // reflow
+  colorNameEl.classList.add('pop');
+
+  // Floating emoji celebration
+  spawnStars(c.hex);
+}
+
+const EMOJIS = ['⭐', '✨', '🌟', '💫', '🎉', '🎈'];
+function spawnStars() {
+  for (let i = 0; i < 6; i++) {
+    const el = document.createElement('span');
+    el.className = 'star';
+    el.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+    el.style.left = (Math.random() * 90 + 5) + 'vw';
+    el.style.top = (Math.random() * 40 + 50) + 'vh';
+    el.style.fontSize = (2 + Math.random() * 2.5) + 'rem';
+    document.body.appendChild(el);
+    el.addEventListener('animationend', () => el.remove());
+  }
+}
+
+// ---- Voice Recognition ----
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+
+if (SpeechRecognition) {
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-US';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 3;
+
+  recognition.addEventListener('result', e => {
+    const spoken = e.results[0][0].transcript.toLowerCase().trim();
+    micLabel.textContent = 'You said: "' + spoken + '"';
+    const match = COLORS.find(c => spoken.includes(c.name.toLowerCase()));
+    if (match) {
+      pickColor(match);
+    } else {
+      micLabel.textContent = 'Hmm, I didn\'t catch a color. Try again!';
+    }
+    micBtn.classList.remove('listening');
+  });
+
+  recognition.addEventListener('error', () => {
+    micLabel.textContent = 'Couldn\'t hear that — try again!';
+    micBtn.classList.remove('listening');
+  });
+
+  recognition.addEventListener('end', () => {
+    micBtn.classList.remove('listening');
+  });
+
+  micBtn.addEventListener('click', () => {
+    if (micBtn.classList.contains('listening')) {
+      recognition.stop();
+    } else {
+      recognition.start();
+      micBtn.classList.add('listening');
+      micLabel.textContent = 'Listening...';
+    }
+  });
+} else {
+  micBtn.style.display = 'none';
+  micLabel.textContent = 'Voice not supported in this browser. Tap a color!';
+}
+</script>
+</body>
+</html>
