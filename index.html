@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paw Patrol Pup Game!</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', cursive, sans-serif;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+
+    /* ---- Sky / background ---- */
+    .sky {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, #87CEEB 0%, #B0E0FF 60%, #90EE90 85%, #228B22 100%);
+      z-index: 0;
+    }
+
+    .cloud {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.85;
+      animation: floatCloud linear infinite;
+    }
+    .cloud::before, .cloud::after {
+      content: '';
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+    }
+    .cloud:nth-child(1) { width: 120px; height: 50px; top: 8%; left: -150px; animation-duration: 28s; }
+    .cloud:nth-child(1)::before { width: 60px; height: 60px; top: -30px; left: 20px; }
+    .cloud:nth-child(1)::after { width: 80px; height: 55px; top: -20px; left: 50px; }
+    .cloud:nth-child(2) { width: 100px; height: 40px; top: 15%; left: -120px; animation-duration: 35s; animation-delay: 8s; }
+    .cloud:nth-child(2)::before { width: 50px; height: 50px; top: -25px; left: 15px; }
+    .cloud:nth-child(2)::after { width: 65px; height: 45px; top: -18px; left: 40px; }
+    .cloud:nth-child(3) { width: 90px; height: 35px; top: 5%; left: -100px; animation-duration: 40s; animation-delay: 15s; }
+    .cloud:nth-child(3)::before { width: 45px; height: 45px; top: -22px; left: 12px; }
+    .cloud:nth-child(3)::after { width: 55px; height: 40px; top: -15px; left: 35px; }
+
+    @keyframes floatCloud {
+      from { transform: translateX(0); }
+      to   { transform: translateX(calc(100vw + 200px)); }
+    }
+
+    /* ---- Title ---- */
+    .title {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 24px 10px 8px;
+    }
+    .title h1 {
+      font-size: clamp(28px, 6vw, 56px);
+      color: #E31937;
+      text-shadow: 3px 3px 0 #FFD700, -1px -1px 0 #fff;
+      letter-spacing: 2px;
+    }
+    .title p {
+      font-size: clamp(16px, 3vw, 26px);
+      color: #1a5276;
+      margin-top: 4px;
+    }
+
+    /* ---- Buttons ---- */
+    .buttons {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      gap: clamp(16px, 5vw, 60px);
+      margin-top: clamp(12px, 3vh, 30px);
+    }
+
+    .pup-btn {
+      width: clamp(140px, 35vw, 280px);
+      height: clamp(140px, 35vw, 280px);
+      border: 8px solid #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+      position: relative;
+      overflow: hidden;
+    }
+    .pup-btn:active {
+      transform: scale(0.93);
+    }
+    .pup-btn:hover {
+      transform: scale(1.06);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.35);
+    }
+
+    .pup-btn .paw-icon {
+      font-size: clamp(48px, 10vw, 90px);
+      line-height: 1;
+    }
+    .pup-btn .label {
+      font-size: clamp(18px, 4vw, 32px);
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+      margin-top: 4px;
+    }
+
+    #btn-chase {
+      background: radial-gradient(circle at 35% 35%, #5DADE2, #1B4F72);
+    }
+    #btn-marshall {
+      background: radial-gradient(circle at 35% 35%, #F1948A, #C0392B);
+    }
+
+    /* ---- Stage (where the pup shows up) ---- */
+    .stage {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.55);
+      animation: fadeIn 0.3s ease;
+    }
+    .stage.visible {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+
+    .pup-scene {
+      position: relative;
+      width: min(92vw, 600px);
+      height: min(80vh, 600px);
+      border-radius: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      overflow: hidden;
+    }
+
+    @keyframes popIn {
+      0%   { transform: scale(0.3); opacity: 0; }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+
+    .pup-scene.chase-scene {
+      background: radial-gradient(circle at 50% 40%, #AED6F1, #1B4F72);
+      border: 6px solid #5DADE2;
+    }
+    .pup-scene.marshall-scene {
+      background: radial-gradient(circle at 50% 40%, #FADBD8, #922B21);
+      border: 6px solid #E74C3C;
+    }
+
+    .pup-character {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .pup-body {
+      font-size: clamp(100px, 25vw, 200px);
+      animation: bounceIn 0.6s ease;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+    }
+
+    @keyframes bounceIn {
+      0%   { transform: translateY(60px) scale(0); opacity: 0; }
+      60%  { transform: translateY(-15px) scale(1.1); opacity: 1; }
+      80%  { transform: translateY(5px) scale(0.95); }
+      100% { transform: translateY(0) scale(1); }
+    }
+
+    .pup-name {
+      font-size: clamp(28px, 6vw, 52px);
+      color: #fff;
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+      margin-top: 6px;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .pup-tagline {
+      font-size: clamp(14px, 3vw, 24px);
+      color: #FFF9C4;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* tool animation */
+    .tool-item {
+      position: absolute;
+      font-size: clamp(40px, 10vw, 80px);
+      animation: toolFloat 2s ease-in-out infinite alternate;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+    }
+    .tool-item:nth-child(1) { top: 8%; left: 8%;  animation-delay: 0s; }
+    .tool-item:nth-child(2) { top: 8%; right: 8%; animation-delay: 0.5s; }
+    .tool-item:nth-child(3) { bottom: 12%; left: 15%;  animation-delay: 0.3s; }
+    .tool-item:nth-child(4) { bottom: 12%; right: 15%; animation-delay: 0.7s; }
+
+    @keyframes toolFloat {
+      0%   { transform: translateY(0) rotate(-5deg); }
+      100% { transform: translateY(-18px) rotate(5deg); }
+    }
+
+    /* sparkles */
+    .sparkle {
+      position: absolute;
+      width: 10px; height: 10px;
+      background: #FFD700;
+      border-radius: 50%;
+      animation: sparkleAnim 1.2s ease-in-out infinite;
+      opacity: 0;
+    }
+    @keyframes sparkleAnim {
+      0%, 100% { opacity: 0; transform: scale(0); }
+      50%      { opacity: 1; transform: scale(1.4); }
+    }
+
+    /* water spray for Marshall */
+    .water-drops {
+      position: absolute;
+      top: 20%;
+      width: 100%;
+      height: 60%;
+      pointer-events: none;
+    }
+    .water-drop {
+      position: absolute;
+      width: 12px;
+      height: 18px;
+      background: #85C1E9;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      opacity: 0;
+      animation: dropFall 1.8s ease-in infinite;
+    }
+
+    @keyframes dropFall {
+      0%   { opacity: 0; transform: translateY(-20px) scale(0.5); }
+      20%  { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(200px) scale(0.3); }
+    }
+
+    /* music notes for Chase */
+    .music-notes {
+      position: absolute;
+      top: 15%;
+      width: 100%;
+      height: 60%;
+      pointer-events: none;
+    }
+    .music-note {
+      position: absolute;
+      font-size: clamp(24px, 5vw, 44px);
+      opacity: 0;
+      animation: noteFloat 2.5s ease-out infinite;
+    }
+
+    @keyframes noteFloat {
+      0%   { opacity: 0; transform: translateY(20px) rotate(0deg); }
+      20%  { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-120px) rotate(20deg) translateX(30px); }
+    }
+
+    /* close button */
+    .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      z-index: 60;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      font-size: 28px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .close-btn:hover { background: rgba(0,0,0,0.7); }
+
+    /* stars at top */
+    .badge {
+      position: absolute;
+      top: -18px;
+      background: #FFD700;
+      color: #5D4037;
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+      animation: spinBadge 3s linear infinite;
+      z-index: 5;
+    }
+    @keyframes spinBadge {
+      0%   { transform: rotateY(0deg); }
+      100% { transform: rotateY(360deg); }
+    }
+
+    /* paw prints walking animation */
+    .paw-prints {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 120px;
+      z-index: 5;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .paw-print {
+      position: absolute;
+      font-size: 28px;
+      opacity: 0.25;
+      bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background -->
+  <div class="sky">
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+  </div>
+
+  <!-- Paw prints along the bottom -->
+  <div class="paw-prints" id="pawPrints"></div>
+
+  <!-- Title -->
+  <div class="title">
+    <h1>PAW PATROL</h1>
+    <p>Tap a color to call a pup!</p>
+  </div>
+
+  <!-- Buttons -->
+  <div class="buttons">
+    <div class="pup-btn" id="btn-chase" onclick="showPup('chase')" role="button" tabindex="0">
+      <span class="paw-icon">&#128054;</span>
+      <span class="label">BLUE</span>
+    </div>
+    <div class="pup-btn" id="btn-marshall" onclick="showPup('marshall')" role="button" tabindex="0">
+      <span class="paw-icon">&#128021;</span>
+      <span class="label">RED</span>
+    </div>
+  </div>
+
+  <!-- Stage overlay -->
+  <div class="stage" id="stage" onclick="handleStageClick(event)">
+    <div class="pup-scene" id="pupScene">
+      <button class="close-btn" onclick="closeStage()" aria-label="Close">&times;</button>
+      <div class="badge" id="badge"></div>
+      <div id="sceneContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // ---- Web Audio API: generate fun sounds ----
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playChaseMusic() {
+      // Upbeat "siren + melody" sequence
+      const notes = [523, 659, 784, 659, 523, 784, 880, 784, 659, 523];
+      notes.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.18);
+        gain.gain.setValueAtTime(0.18, audioCtx.currentTime + i * 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.18 + 0.17);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + i * 0.18);
+        osc.stop(audioCtx.currentTime + i * 0.18 + 0.18);
+      });
+
+      // Siren sweep
+      const siren = audioCtx.createOscillator();
+      const sirenGain = audioCtx.createGain();
+      siren.type = 'sine';
+      siren.frequency.setValueAtTime(600, audioCtx.currentTime + 1.9);
+      siren.frequency.linearRampToValueAtTime(900, audioCtx.currentTime + 2.3);
+      siren.frequency.linearRampToValueAtTime(600, audioCtx.currentTime + 2.7);
+      sirenGain.gain.setValueAtTime(0.12, audioCtx.currentTime + 1.9);
+      sirenGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.8);
+      siren.connect(sirenGain).connect(audioCtx.destination);
+      siren.start(audioCtx.currentTime + 1.9);
+      siren.stop(audioCtx.currentTime + 2.9);
+    }
+
+    function playMarshallSound() {
+      // Fire truck horn + water splash
+      const horn1 = audioCtx.createOscillator();
+      const hornGain = audioCtx.createGain();
+      horn1.type = 'sawtooth';
+      horn1.frequency.setValueAtTime(220, audioCtx.currentTime);
+      horn1.frequency.setValueAtTime(277, audioCtx.currentTime + 0.25);
+      hornGain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      hornGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+      horn1.connect(hornGain).connect(audioCtx.destination);
+      horn1.start(audioCtx.currentTime);
+      horn1.stop(audioCtx.currentTime + 0.85);
+
+      // Water "splash" using noise-like oscillator
+      setTimeout(() => {
+        for (let i = 0; i < 6; i++) {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(800 + Math.random() * 1200, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(200 + Math.random() * 400, audioCtx.currentTime + 0.4);
+          g.gain.setValueAtTime(0.06, audioCtx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+          osc.connect(g).connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + i * 0.07);
+          osc.stop(audioCtx.currentTime + i * 0.07 + 0.4);
+        }
+      }, 500);
+    }
+
+    // ---- Scene rendering ----
+    function showPup(pup) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      const stage = document.getElementById('stage');
+      const scene = document.getElementById('pupScene');
+      const content = document.getElementById('sceneContent');
+      const badge = document.getElementById('badge');
+
+      scene.className = 'pup-scene';
+
+      if (pup === 'chase') {
+        scene.classList.add('chase-scene');
+        badge.textContent = '\u2B50';
+        content.innerHTML = `
+          <div class="tool-item">\uD83E\uDD4F</div>
+          <div class="tool-item">\uD83D\uDD0D</div>
+          <div class="tool-item">\uD83D\uDCE2</div>
+          <div class="tool-item">\u2B50</div>
+          <div class="music-notes">
+            ${musicNotes(8)}
+          </div>
+          ${sparkles(14)}
+          <div class="pup-character">
+            <div class="pup-body">\uD83D\uDC36</div>
+            <div class="pup-name">CHASE</div>
+            <div class="pup-tagline">"Chase is on the case!"</div>
+            <div style="margin-top:10px;font-size:clamp(28px,6vw,50px);">
+              \uD83D\uDD35\uD83E\uDE9A\uD83C\uDFB5
+            </div>
+          </div>
+        `;
+        playChaseMusic();
+      } else {
+        scene.classList.add('marshall-scene');
+        badge.textContent = '\uD83D\uDD25';
+        content.innerHTML = `
+          <div class="tool-item">\uD83D\uDE92</div>
+          <div class="tool-item">\uD83E\uDDEF</div>
+          <div class="tool-item">\uD83D\uDCA6</div>
+          <div class="tool-item">\uD83D\uDD25</div>
+          <div class="water-drops">
+            ${waterDrops(12)}
+          </div>
+          ${sparkles(14)}
+          <div class="pup-character">
+            <div class="pup-body">\uD83D\uDC15</div>
+            <div class="pup-name">MARSHALL</div>
+            <div class="pup-tagline">"I'm all fired up!"</div>
+            <div style="margin-top:10px;font-size:clamp(28px,6vw,50px);">
+              \uD83D\uDD34\uD83D\uDCA7\uD83D\uDE92
+            </div>
+          </div>
+        `;
+        playMarshallSound();
+      }
+
+      stage.classList.add('visible');
+    }
+
+    function musicNotes(count) {
+      const notes = ['\uD83C\uDFB5', '\uD83C\uDFB6', '\uD83C\uDFBC'];
+      let html = '';
+      for (let i = 0; i < count; i++) {
+        const left = 10 + Math.random() * 80;
+        const delay = Math.random() * 2;
+        html += `<span class="music-note" style="left:${left}%;animation-delay:${delay}s">${notes[i % notes.length]}</span>`;
+      }
+      return html;
+    }
+
+    function waterDrops(count) {
+      let html = '';
+      for (let i = 0; i < count; i++) {
+        const left = 5 + Math.random() * 90;
+        const delay = Math.random() * 1.8;
+        html += `<span class="water-drop" style="left:${left}%;animation-delay:${delay}s"></span>`;
+      }
+      return html;
+    }
+
+    function sparkles(count) {
+      let html = '';
+      for (let i = 0; i < count; i++) {
+        const top = 10 + Math.random() * 80;
+        const left = 5 + Math.random() * 90;
+        const delay = Math.random() * 1.5;
+        const size = 6 + Math.random() * 10;
+        html += `<div class="sparkle" style="top:${top}%;left:${left}%;animation-delay:${delay}s;width:${size}px;height:${size}px"></div>`;
+      }
+      return html;
+    }
+
+    function closeStage() {
+      document.getElementById('stage').classList.remove('visible');
+    }
+
+    function handleStageClick(e) {
+      if (e.target === document.getElementById('stage')) {
+        closeStage();
+      }
+    }
+
+    // ---- Keyboard support ----
+    document.addEventListener('keydown', (e) => {
+      const key = e.key.toLowerCase();
+      if (key === 'b' || key === 'arrowleft')  showPup('chase');
+      if (key === 'r' || key === 'arrowright') showPup('marshall');
+      if (key === 'escape') closeStage();
+    });
+
+    // ---- Paw prints along bottom ----
+    (function initPawPrints() {
+      const container = document.getElementById('pawPrints');
+      for (let i = 0; i < 12; i++) {
+        const paw = document.createElement('span');
+        paw.className = 'paw-print';
+        paw.textContent = '\uD83D\uDC3E';
+        paw.style.left = (i * 8.5) + '%';
+        paw.style.transform = `rotate(${-15 + Math.random() * 30}deg)`;
+        container.appendChild(paw);
+      }
+    })();
+  </script>
+</body>
+</html>
