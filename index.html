@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aadit's Color Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            transition: background-color 0.5s ease;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .smiley {
+            font-size: 150px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .color-name {
+            font-size: 64px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
+        }
+
+        .instruction {
+            font-size: 28px;
+            margin-top: 30px;
+            color: #555;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .mic-button {
+            margin-top: 40px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: none;
+            background: #ff6b6b;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mic-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .mic-button.listening {
+            background: #51cf66;
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(81, 207, 102, 0.4); }
+            50% { transform: scale(1.15); box-shadow: 0 6px 30px rgba(81, 207, 102, 0.6); }
+        }
+
+        .heard {
+            font-size: 20px;
+            margin-top: 20px;
+            color: #888;
+            min-height: 30px;
+        }
+
+        .color-dots {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 30px;
+            justify-content: center;
+            max-width: 400px;
+        }
+
+        .color-dot {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s;
+        }
+
+        .color-dot.active {
+            transform: scale(1.3);
+            border-color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="smiley">😊</div>
+    <div class="color-name" id="colorName">Say a color!</div>
+    <div class="instruction">Tap the mic and say a color, Aadit!</div>
+    <button class="mic-button" id="micBtn" onclick="toggleListening()">🎤</button>
+    <div class="heard" id="heard"></div>
+    <div class="color-dots" id="colorDots"></div>
+
+    <script>
+        const colors = {
+            red:     { bg: '#ff6b6b', text: '#fff' },
+            orange:  { bg: '#ffa94d', text: '#fff' },
+            yellow:  { bg: '#ffd43b', text: '#333' },
+            green:   { bg: '#51cf66', text: '#fff' },
+            blue:    { bg: '#339af0', text: '#fff' },
+            purple:  { bg: '#b197fc', text: '#fff' },
+            pink:    { bg: '#f783ac', text: '#fff' },
+            white:   { bg: '#ffffff', text: '#333' },
+            black:   { bg: '#212529', text: '#fff' },
+            brown:   { bg: '#a0522d', text: '#fff' },
+            grey:    { bg: '#adb5bd', text: '#fff' },
+            gray:    { bg: '#adb5bd', text: '#fff' },
+        };
+
+        // Build color dots
+        const dotsContainer = document.getElementById('colorDots');
+        const uniqueColors = Object.entries(colors).filter(([name]) => name !== 'gray');
+        uniqueColors.forEach(([name, val]) => {
+            const dot = document.createElement('div');
+            dot.className = 'color-dot';
+            dot.id = 'dot-' + name;
+            dot.style.backgroundColor = val.bg;
+            dot.title = name;
+            dotsContainer.appendChild(dot);
+        });
+
+        let recognition = null;
+        let isListening = false;
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function (event) {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                transcript = transcript.toLowerCase().trim();
+                document.getElementById('heard').textContent = '🗣 "' + transcript + '"';
+
+                // Check each word in the transcript for a color match
+                const words = transcript.split(/\s+/);
+                for (let i = words.length - 1; i >= 0; i--) {
+                    const word = words[i].replace(/[^a-z]/g, '');
+                    if (colors[word]) {
+                        applyColor(word);
+                        break;
+                    }
+                }
+            };
+
+            recognition.onerror = function (event) {
+                console.log('Speech recognition error:', event.error);
+                if (event.error === 'not-allowed') {
+                    document.getElementById('heard').textContent = 'Please allow microphone access!';
+                }
+            };
+
+            recognition.onend = function () {
+                if (isListening) {
+                    recognition.start();
+                }
+            };
+        } else {
+            document.getElementById('heard').textContent = 'Voice not supported in this browser. Try Chrome!';
+            document.getElementById('micBtn').style.display = 'none';
+        }
+
+        function toggleListening() {
+            if (!recognition) return;
+            const btn = document.getElementById('micBtn');
+
+            if (isListening) {
+                isListening = false;
+                recognition.stop();
+                btn.classList.remove('listening');
+                btn.textContent = '🎤';
+                document.getElementById('heard').textContent = '';
+            } else {
+                isListening = true;
+                recognition.start();
+                btn.classList.add('listening');
+                btn.textContent = '👂';
+                document.getElementById('heard').textContent = 'Listening...';
+            }
+        }
+
+        function applyColor(colorName) {
+            const color = colors[colorName];
+            document.body.style.backgroundColor = color.bg;
+            document.getElementById('colorName').textContent = colorName.toUpperCase();
+            document.getElementById('colorName').style.color = color.text;
+            document.querySelector('.instruction').style.color = color.text;
+            document.querySelector('.heard').style.color = color.text;
+
+            // Highlight the active dot
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+            const dot = document.getElementById('dot-' + colorName) ||
+                        document.getElementById('dot-' + (colorName === 'gray' ? 'grey' : ''));
+            if (dot) dot.classList.add('active');
+        }
+    </script>
+</body>
+</html>
