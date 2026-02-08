@@ -196,6 +196,12 @@
     #btn-skye {
       background: radial-gradient(circle at 35% 35%, #F5B7D0, #C2185B);
     }
+    #btn-rocky {
+      background: radial-gradient(circle at 35% 35%, #7DCEA0, #1B6D3D);
+    }
+    #btn-zuma {
+      background: radial-gradient(circle at 35% 35%, #F5B041, #D35400);
+    }
 
     /* ---- Stage (where the pup shows up) ---- */
     .stage {
@@ -249,6 +255,18 @@
     .pup-scene.skye-scene {
       background: radial-gradient(circle at 50% 40%, #FDEDEC, #C2185B);
       border: 6px solid #E91E90;
+    }
+    .pup-scene.rocky-scene {
+      background: radial-gradient(circle at 50% 40%, #D5F5E3, #1B6D3D);
+      border: 6px solid #27AE60;
+    }
+    .pup-scene.zuma-scene {
+      background: radial-gradient(circle at 50% 40%, #FDEBD0, #D35400);
+      border: 6px solid #F39C12;
+    }
+    .pup-scene.baby-scene {
+      background: radial-gradient(circle at 50% 40%, #FFF9C4, #FFECB3, #FFE0B2);
+      border: 6px solid #FFD54F;
     }
 
     .pup-character {
@@ -472,6 +490,14 @@
       <span class="paw-icon">&#128021;</span>
       <span class="label">SKYE</span>
     </div>
+    <div class="pup-btn" id="btn-rocky" onclick="showPup('rocky')" role="button" tabindex="0">
+      <span class="paw-icon">&#128054;</span>
+      <span class="label">ROCKY</span>
+    </div>
+    <div class="pup-btn" id="btn-zuma" onclick="showPup('zuma')" role="button" tabindex="0">
+      <span class="paw-icon">&#128021;</span>
+      <span class="label">ZUMA</span>
+    </div>
   </div>
 
   <!-- Stage overlay -->
@@ -603,6 +629,78 @@
       });
     }
 
+    function playRockySound() {
+      // Ratchet/wrench clicks + recycling jingle
+      [0, 0.15, 0.3, 0.45].forEach((t) => {
+        const click = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        click.type = 'square';
+        click.frequency.setValueAtTime(1200 + Math.random() * 400, audioCtx.currentTime + t);
+        g.gain.setValueAtTime(0.08, audioCtx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + t + 0.06);
+        click.connect(g).connect(audioCtx.destination);
+        click.start(audioCtx.currentTime + t);
+        click.stop(audioCtx.currentTime + t + 0.08);
+      });
+      // Cheerful jingle
+      const jingle = [659, 784, 880, 1047, 880, 784];
+      jingle.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + 0.6 + i * 0.14);
+        g.gain.setValueAtTime(0.14, audioCtx.currentTime + 0.6 + i * 0.14);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6 + i * 0.14 + 0.13);
+        osc.connect(g).connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + 0.6 + i * 0.14);
+        osc.stop(audioCtx.currentTime + 0.6 + i * 0.14 + 0.15);
+      });
+    }
+
+    function playZumaSound() {
+      // Surfing wave whoosh + tropical bongo hits
+      const wave = audioCtx.createOscillator();
+      const waveGain = audioCtx.createGain();
+      wave.type = 'sine';
+      wave.frequency.setValueAtTime(150, audioCtx.currentTime);
+      wave.frequency.linearRampToValueAtTime(500, audioCtx.currentTime + 0.5);
+      wave.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 1.0);
+      waveGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      waveGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.1);
+      wave.connect(waveGain).connect(audioCtx.destination);
+      wave.start(audioCtx.currentTime);
+      wave.stop(audioCtx.currentTime + 1.2);
+      // Bongo hits
+      [1.0, 1.15, 1.25, 1.45, 1.55].forEach((t) => {
+        const bongo = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        bongo.type = 'triangle';
+        bongo.frequency.setValueAtTime(300 + Math.random() * 200, audioCtx.currentTime + t);
+        bongo.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + t + 0.1);
+        g.gain.setValueAtTime(0.15, audioCtx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + t + 0.12);
+        bongo.connect(g).connect(audioCtx.destination);
+        bongo.start(audioCtx.currentTime + t);
+        bongo.stop(audioCtx.currentTime + t + 0.15);
+      });
+    }
+
+    function playBabySound() {
+      // Happy lullaby-style melody
+      const melody = [523, 659, 784, 1047, 784, 659, 523, 659, 784, 1047, 1319, 1047];
+      melody.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.2);
+        g.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.2);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.2 + 0.19);
+        osc.connect(g).connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + i * 0.2);
+        osc.stop(audioCtx.currentTime + i * 0.2 + 0.2);
+      });
+    }
+
     // ---- Scene rendering ----
     function showPup(pup) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -699,6 +797,69 @@
           </div>
         `;
         playSkyeSound();
+      } else if (pup === 'rocky') {
+        scene.classList.add('rocky-scene');
+        badge.textContent = '\u267B\uFE0F';
+        content.innerHTML = `
+          <div class="tool-item">\uD83D\uDD27</div>
+          <div class="tool-item">\u267B\uFE0F</div>
+          <div class="tool-item">\uD83D\uDEE0\uFE0F</div>
+          <div class="tool-item">\uD83D\uDCA1</div>
+          ${sparkles(14)}
+          <div class="pup-character">
+            <div class="pup-body">\uD83D\uDC36</div>
+            <div class="pup-name">ROCKY</div>
+            <div class="pup-tagline">"Don't lose it, reuse it!"</div>
+            <div style="margin-top:10px;font-size:clamp(28px,6vw,50px);">
+              \uD83D\uDFE2\uD83D\uDD27\u267B\uFE0F
+            </div>
+          </div>
+        `;
+        playRockySound();
+      } else if (pup === 'zuma') {
+        scene.classList.add('zuma-scene');
+        badge.textContent = '\uD83C\uDF0A';
+        content.innerHTML = `
+          <div class="tool-item">\uD83C\uDFC4</div>
+          <div class="tool-item">\uD83C\uDF0A</div>
+          <div class="tool-item">\uD83D\uDEA4</div>
+          <div class="tool-item">\uD83D\uDC1A</div>
+          <div class="water-drops">
+            ${waterDrops(10)}
+          </div>
+          ${sparkles(14)}
+          <div class="pup-character">
+            <div class="pup-body">\uD83D\uDC15</div>
+            <div class="pup-name">ZUMA</div>
+            <div class="pup-tagline">"Let's dive in!"</div>
+            <div style="margin-top:10px;font-size:clamp(28px,6vw,50px);">
+              \uD83D\uDFE0\uD83C\uDF0A\uD83C\uDFC4
+            </div>
+          </div>
+        `;
+        playZumaSound();
+      } else if (pup === 'baby') {
+        scene.classList.add('baby-scene');
+        badge.textContent = '\uD83D\uDC96';
+        content.innerHTML = `
+          <div class="tool-item">\u2764\uFE0F</div>
+          <div class="tool-item">\uD83C\uDF1F</div>
+          <div class="tool-item">\uD83D\uDC96</div>
+          <div class="tool-item">\u2728</div>
+          <div class="music-notes">
+            ${musicNotes(8)}
+          </div>
+          ${sparkles(20)}
+          <div class="pup-character">
+            <div class="pup-body" style="font-size:clamp(120px,30vw,240px);">\uD83D\uDE0A</div>
+            <div class="pup-name" style="color:#E91E63;">DADDY'S BEST BABY!</div>
+            <div class="pup-tagline" style="font-size:clamp(18px,4vw,32px);color:#FF6F00;">\u2764\uFE0F You are the BEST! \u2764\uFE0F</div>
+            <div style="margin-top:10px;font-size:clamp(28px,6vw,50px);">
+              \uD83D\uDC96\uD83C\uDF1F\uD83E\uDD70\uD83C\uDF1F\uD83D\uDC96
+            </div>
+          </div>
+        `;
+        playBabySound();
       }
 
       stage.classList.add('visible');
@@ -778,6 +939,15 @@
         } else if (words.includes('skye') || words.includes('sky') || words.includes('skype')) {
           showPup('skye');
           restartRecognition();
+        } else if (words.includes('rocky') || words.includes('rock')) {
+          showPup('rocky');
+          restartRecognition();
+        } else if (words.includes('zuma') || words.includes('zooma') || words.includes('zoomah')) {
+          showPup('zuma');
+          restartRecognition();
+        } else if (words.includes('daddy') || words.includes('dada') || words.includes('baby') || words.includes('best')) {
+          showPup('baby');
+          restartRecognition();
         }
       };
 
@@ -814,7 +984,7 @@
       isListening = true;
       try { recognition.start(); } catch(e) {}
       document.getElementById('micBtn').classList.add('listening');
-      document.getElementById('micLabel').textContent = 'Say a pup name: Chase, Marshall, Rubble, or Skye!';
+      document.getElementById('micLabel').textContent = 'Say a pup name to call them!';
       document.getElementById('heardWord').textContent = '';
     }
 
