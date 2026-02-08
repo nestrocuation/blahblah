@@ -269,6 +269,14 @@
       background: radial-gradient(circle at 50% 40%, #FFF9C4, #FFECB3, #FFE0B2);
       border: 6px solid #FFD54F;
     }
+    .pup-scene.dadii-scene {
+      background: radial-gradient(circle at 50% 40%, #F3E5F5, #CE93D8, #8E24AA);
+      border: 6px solid #AB47BC;
+    }
+    .pup-scene.abba-scene {
+      background: radial-gradient(circle at 50% 40%, #E8F5E9, #A5D6A7, #2E7D32);
+      border: 6px solid #66BB6A;
+    }
 
     .pup-character {
       position: relative;
@@ -700,6 +708,38 @@
       });
     }
 
+    function playDadiiSound() {
+      // Warm, gentle melody like a lullaby from grandma
+      const melody = [392, 440, 523, 494, 440, 392, 440, 523, 587, 523];
+      melody.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.25);
+        g.gain.setValueAtTime(0.14, audioCtx.currentTime + i * 0.25);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.25 + 0.24);
+        osc.connect(g).connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + i * 0.25);
+        osc.stop(audioCtx.currentTime + i * 0.25 + 0.25);
+      });
+    }
+
+    function playAbbaSound() {
+      // Deep, warm tones like a grandpa's laugh
+      const melody = [262, 294, 330, 349, 330, 294, 262, 294, 330, 392];
+      melody.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.22);
+        g.gain.setValueAtTime(0.16, audioCtx.currentTime + i * 0.22);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + i * 0.22 + 0.21);
+        osc.connect(g).connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + i * 0.22);
+        osc.stop(audioCtx.currentTime + i * 0.22 + 0.22);
+      });
+    }
+
     // ---- Scene rendering ----
     function showPup(pup) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -859,6 +899,74 @@
           </div>
         `;
         playBabySound();
+      } else if (pup === 'dadii') {
+        scene.classList.add('dadii-scene');
+        badge.textContent = '\uD83D\uDC9C';
+        content.innerHTML = `
+          <div class="tool-item">\uD83C\uDF3A</div>
+          <div class="tool-item">\uD83D\uDC9C</div>
+          <div class="tool-item">\u2728</div>
+          <div class="tool-item">\uD83C\uDF19</div>
+          <div class="music-notes">
+            ${musicNotes(6)}
+          </div>
+          ${sparkles(18)}
+          <div class="pup-character">
+            <div class="pup-body" style="font-size:clamp(120px,30vw,240px);">\uD83E\uDDD5</div>
+            <div class="pup-name" style="color:#FFE0B2;">DADII</div>
+            <div class="pup-tagline" style="font-size:clamp(18px,4vw,32px);color:#FFF9C4;">Grandma loves you!</div>
+            <div style="margin-top:10px;font-size:clamp(28px,6vw,50px);">
+              \uD83D\uDC9C\uD83C\uDF3A\u2764\uFE0F\uD83C\uDF3A\uD83D\uDC9C
+            </div>
+          </div>
+        `;
+        playDadiiSound();
+      } else if (pup === 'abba') {
+        scene.classList.add('abba-scene');
+        badge.textContent = '\uD83D\uDC9A';
+        content.innerHTML = `
+          <div class="tool-item">\uD83C\uDF33</div>
+          <div class="tool-item">\uD83D\uDC9A</div>
+          <div class="tool-item">\u2B50</div>
+          <div class="tool-item">\uD83C\uDF1F</div>
+          <div class="music-notes">
+            ${musicNotes(6)}
+          </div>
+          ${sparkles(18)}
+          <div class="pup-character">
+            <div class="pup-body" style="font-size:clamp(120px,30vw,240px);">\uD83E\uDDD4</div>
+            <div class="pup-name" style="color:#FFE0B2;">ABBA</div>
+            <div class="pup-tagline" style="font-size:clamp(18px,4vw,32px);color:#FFF9C4;">Grandpa loves you!</div>
+            <div style="margin-top:10px;font-size:clamp(28px,6vw,50px);">
+              \uD83D\uDC9A\uD83C\uDF33\u2764\uFE0F\uD83C\uDF33\uD83D\uDC9A
+            </div>
+          </div>
+        `;
+        playAbbaSound();
+      } else if (pup === 'story') {
+        scene.classList.add('baby-scene');
+        badge.textContent = '\uD83D\uDCD6';
+        const stories = [
+          "Once upon a time, a little puppy found a golden bone in the park. He shared it with all his friends, and they had the best day ever! The end.",
+          "A tiny star fell from the sky into a garden. A little boy picked it up and it turned into a glowing butterfly. They flew around the world together! The end.",
+          "There was a baby bear who couldn't sleep. His mama sang him a song about the moon, and he dreamed of dancing with the clouds all night! The end.",
+          "A brave little fish swam to the bottom of the ocean and found a treasure chest full of cookies! He brought them home and had a party with all his fishy friends! The end.",
+          "One rainy day, a little duck found a rainbow puddle. Every time he jumped in it, he turned a different color! Red, blue, green! All the animals came to jump too! The end."
+        ];
+        const story = stories[Math.floor(Math.random() * stories.length)];
+        content.innerHTML = `
+          <div class="tool-item">\uD83D\uDCD6</div>
+          <div class="tool-item">\u2728</div>
+          <div class="tool-item">\uD83C\uDF1F</div>
+          <div class="tool-item">\uD83C\uDF19</div>
+          ${sparkles(16)}
+          <div class="pup-character">
+            <div class="pup-body" style="font-size:clamp(80px,20vw,150px);">\uD83D\uDCD6</div>
+            <div class="pup-name" style="color:#E91E63;">STORY TIME!</div>
+            <div class="pup-tagline" style="font-size:clamp(13px,2.8vw,20px);color:#FFF;max-width:90%;line-height:1.4;font-style:normal;">${story}</div>
+          </div>
+        `;
+        playBabySound();
       }
 
       stage.classList.add('visible');
@@ -946,6 +1054,18 @@
           restartRecognition();
         } else if (words.includes('daddy') || words.includes('dada') || words.includes('baby') || words.includes('best')) {
           showPup('baby');
+          restartRecognition();
+        } else if (words.includes('kon') || words.includes('locha') || words.includes('mare')) {
+          showPup('dadii');
+          restartRecognition();
+        } else if (words.includes('mani') || words.includes('money')) {
+          showPup('abba');
+          restartRecognition();
+        } else if (words.includes('story')) {
+          showPup('story');
+          restartRecognition();
+        } else if (words.includes('reset') || words.includes('go back') || words.includes('close')) {
+          closeStage();
           restartRecognition();
         }
       };
