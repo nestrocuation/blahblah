@@ -135,8 +135,10 @@
       z-index: 10;
       display: flex;
       justify-content: center;
-      gap: clamp(12px, 4vw, 40px);
-      margin-top: clamp(10px, 2vh, 20px);
+      flex-wrap: wrap;
+      gap: clamp(8px, 2vw, 20px);
+      margin-top: clamp(6px, 1.5vh, 14px);
+      padding: 0 10px;
     }
     .buttons-label {
       text-align: center;
@@ -148,8 +150,8 @@
     }
 
     .pup-btn {
-      width: clamp(80px, 18vw, 130px);
-      height: clamp(80px, 18vw, 130px);
+      width: clamp(65px, 15vw, 100px);
+      height: clamp(65px, 15vw, 100px);
       border: 5px solid #fff;
       border-radius: 50%;
       cursor: pointer;
@@ -187,6 +189,12 @@
     }
     #btn-marshall {
       background: radial-gradient(circle at 35% 35%, #F1948A, #C0392B);
+    }
+    #btn-rubble {
+      background: radial-gradient(circle at 35% 35%, #F9E154, #B7950B);
+    }
+    #btn-skye {
+      background: radial-gradient(circle at 35% 35%, #F5B7D0, #C2185B);
     }
 
     /* ---- Stage (where the pup shows up) ---- */
@@ -233,6 +241,14 @@
     .pup-scene.marshall-scene {
       background: radial-gradient(circle at 50% 40%, #FADBD8, #922B21);
       border: 6px solid #E74C3C;
+    }
+    .pup-scene.rubble-scene {
+      background: radial-gradient(circle at 50% 40%, #FEF9E7, #B7950B);
+      border: 6px solid #F1C40F;
+    }
+    .pup-scene.skye-scene {
+      background: radial-gradient(circle at 50% 40%, #FDEDEC, #C2185B);
+      border: 6px solid #E91E90;
     }
 
     .pup-character {
@@ -448,6 +464,14 @@
       <span class="paw-icon">&#128021;</span>
       <span class="label">MARSHALL</span>
     </div>
+    <div class="pup-btn" id="btn-rubble" onclick="showPup('rubble')" role="button" tabindex="0">
+      <span class="paw-icon">&#128054;</span>
+      <span class="label">RUBBLE</span>
+    </div>
+    <div class="pup-btn" id="btn-skye" onclick="showPup('skye')" role="button" tabindex="0">
+      <span class="paw-icon">&#128021;</span>
+      <span class="label">SKYE</span>
+    </div>
   </div>
 
   <!-- Stage overlay -->
@@ -522,6 +546,63 @@
       }, 500);
     }
 
+    function playRubbleSound() {
+      // Construction sounds: drill/rumble + beeping
+      const rumble = audioCtx.createOscillator();
+      const rumbleGain = audioCtx.createGain();
+      rumble.type = 'sawtooth';
+      rumble.frequency.setValueAtTime(80, audioCtx.currentTime);
+      rumble.frequency.linearRampToValueAtTime(120, audioCtx.currentTime + 0.3);
+      rumble.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.6);
+      rumbleGain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      rumbleGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
+      rumble.connect(rumbleGain).connect(audioCtx.destination);
+      rumble.start(audioCtx.currentTime);
+      rumble.stop(audioCtx.currentTime + 0.75);
+
+      // Beep beep (backup beep)
+      [0.8, 1.2, 1.6].forEach((t) => {
+        const beep = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        beep.type = 'square';
+        beep.frequency.setValueAtTime(800, audioCtx.currentTime + t);
+        g.gain.setValueAtTime(0.1, audioCtx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + t + 0.15);
+        beep.connect(g).connect(audioCtx.destination);
+        beep.start(audioCtx.currentTime + t);
+        beep.stop(audioCtx.currentTime + t + 0.18);
+      });
+    }
+
+    function playSkyeSound() {
+      // Helicopter whirr + uplifting melody
+      const whirr = audioCtx.createOscillator();
+      const whirrGain = audioCtx.createGain();
+      whirr.type = 'triangle';
+      whirr.frequency.setValueAtTime(200, audioCtx.currentTime);
+      whirr.frequency.linearRampToValueAtTime(400, audioCtx.currentTime + 0.5);
+      whirr.frequency.linearRampToValueAtTime(350, audioCtx.currentTime + 1.2);
+      whirrGain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      whirrGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.3);
+      whirr.connect(whirrGain).connect(audioCtx.destination);
+      whirr.start(audioCtx.currentTime);
+      whirr.stop(audioCtx.currentTime + 1.4);
+
+      // Uplifting sparkle melody
+      const melody = [784, 988, 1175, 1319, 1175, 988];
+      melody.forEach((freq, i) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + 1.0 + i * 0.15);
+        g.gain.setValueAtTime(0.12, audioCtx.currentTime + 1.0 + i * 0.15);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.0 + i * 0.15 + 0.14);
+        osc.connect(g).connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + 1.0 + i * 0.15);
+        osc.stop(audioCtx.currentTime + 1.0 + i * 0.15 + 0.15);
+      });
+    }
+
     // ---- Scene rendering ----
     function showPup(pup) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -555,7 +636,7 @@
           </div>
         `;
         playChaseMusic();
-      } else {
+      } else if (pup === 'marshall') {
         scene.classList.add('marshall-scene');
         badge.textContent = '\uD83D\uDD25';
         content.innerHTML = `
@@ -577,6 +658,47 @@
           </div>
         `;
         playMarshallSound();
+      } else if (pup === 'rubble') {
+        scene.classList.add('rubble-scene');
+        badge.textContent = '\uD83D\uDEE0\uFE0F';
+        content.innerHTML = `
+          <div class="tool-item">\uD83D\uDEA7</div>
+          <div class="tool-item">\u2692\uFE0F</div>
+          <div class="tool-item">\uD83D\uDD29</div>
+          <div class="tool-item">\uD83D\uDC77</div>
+          ${sparkles(14)}
+          <div class="pup-character">
+            <div class="pup-body">\uD83D\uDC36</div>
+            <div class="pup-name">RUBBLE</div>
+            <div class="pup-tagline">"Rubble on the double!"</div>
+            <div style="margin-top:10px;font-size:clamp(28px,6vw,50px);">
+              \uD83D\uDFE1\uD83D\uDEA7\u2692\uFE0F
+            </div>
+          </div>
+        `;
+        playRubbleSound();
+      } else if (pup === 'skye') {
+        scene.classList.add('skye-scene');
+        badge.textContent = '\uD83D\uDC96';
+        content.innerHTML = `
+          <div class="tool-item">\uD83D\uDE81</div>
+          <div class="tool-item">\uD83C\uDF08</div>
+          <div class="tool-item">\u2728</div>
+          <div class="tool-item">\uD83E\uDD8B</div>
+          <div class="music-notes">
+            ${musicNotes(6)}
+          </div>
+          ${sparkles(14)}
+          <div class="pup-character">
+            <div class="pup-body">\uD83D\uDC15</div>
+            <div class="pup-name">SKYE</div>
+            <div class="pup-tagline">"This pup's gotta fly!"</div>
+            <div style="margin-top:10px;font-size:clamp(28px,6vw,50px);">
+              \uD83D\uDC97\uD83D\uDE81\u2728
+            </div>
+          </div>
+        `;
+        playSkyeSound();
       }
 
       stage.classList.add('visible');
@@ -644,12 +766,17 @@
         const words = transcript.toLowerCase().trim();
         document.getElementById('heardWord').textContent = '"' + transcript.trim() + '"';
 
-        if (words.includes('chase')) {
+        if (words.includes('chase') || words.includes('cheese')) {
           showPup('chase');
-          // Brief pause so it doesn't re-trigger immediately
           restartRecognition();
         } else if (words.includes('marshall') || words.includes('marshal')) {
           showPup('marshall');
+          restartRecognition();
+        } else if (words.includes('rubble') || words.includes('trouble') || words.includes('bubble')) {
+          showPup('rubble');
+          restartRecognition();
+        } else if (words.includes('skye') || words.includes('sky') || words.includes('skype')) {
+          showPup('skye');
           restartRecognition();
         }
       };
@@ -687,7 +814,7 @@
       isListening = true;
       try { recognition.start(); } catch(e) {}
       document.getElementById('micBtn').classList.add('listening');
-      document.getElementById('micLabel').textContent = 'Listening... say "Chase" or "Marshall"!';
+      document.getElementById('micLabel').textContent = 'Say a pup name: Chase, Marshall, Rubble, or Skye!';
       document.getElementById('heardWord').textContent = '';
     }
 
