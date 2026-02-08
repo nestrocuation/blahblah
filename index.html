@@ -13,12 +13,24 @@
 
     body {
       font-family: 'Comic Sans MS', 'Chalkboard SE', 'Arial Rounded MT Bold', cursive, sans-serif;
-      overflow-x: hidden;
-      overflow-y: auto;
+      overflow: hidden;
       user-select: none;
       -webkit-user-select: none;
       touch-action: manipulation;
-      min-height: 100vh;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    .page-layout {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-evenly;
+      height: 100vh;
+      height: 100dvh;
+      padding: 6px 10px;
     }
 
     /* ---- Sky / background ---- */
@@ -59,13 +71,10 @@
 
     /* ---- Title ---- */
     .title {
-      position: relative;
-      z-index: 10;
       text-align: center;
-      padding: 14px 10px 4px;
     }
     .title h1 {
-      font-size: clamp(28px, 6vw, 56px);
+      font-size: clamp(24px, 5vw, 48px);
       color: #E31937;
       text-shadow: 3px 3px 0 #FFD700, -1px -1px 0 #fff;
       letter-spacing: 2px;
@@ -78,16 +87,13 @@
 
     /* ---- Mic button ---- */
     .mic-area {
-      position: relative;
-      z-index: 10;
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-top: clamp(6px, 1vh, 12px);
     }
     .mic-btn {
-      width: clamp(80px, 18vw, 140px);
-      height: clamp(80px, 18vw, 140px);
+      width: clamp(60px, 14vw, 110px);
+      height: clamp(60px, 14vw, 110px);
       border-radius: 50%;
       border: 6px solid #fff;
       background: radial-gradient(circle at 35% 35%, #58D68D, #1E8449);
@@ -116,45 +122,38 @@
       100% { box-shadow: 0 0 0 0 rgba(241,196,15,0); }
     }
     .mic-label {
-      font-size: clamp(18px, 4vw, 30px);
+      font-size: clamp(14px, 3vw, 22px);
       color: #1a5276;
-      margin-top: 10px;
+      margin-top: 4px;
       font-weight: bold;
       text-align: center;
     }
     .heard-word {
-      font-size: clamp(18px, 4vw, 32px);
+      font-size: clamp(14px, 3vw, 24px);
       color: #E74C3C;
-      margin-top: 4px;
-      min-height: 36px;
+      margin-top: 2px;
+      min-height: 24px;
       font-weight: bold;
       text-align: center;
     }
 
-    /* ---- Fallback buttons (smaller, below mic) ---- */
+    /* ---- Fallback buttons (single row of 6) ---- */
     .buttons {
-      position: relative;
-      z-index: 10;
-      display: grid;
-      grid-template-columns: repeat(3, clamp(65px, 15vw, 100px));
+      display: flex;
       justify-content: center;
-      gap: clamp(8px, 2vw, 16px);
-      margin-top: clamp(4px, 1vh, 10px);
-      padding: 0 10px 10px;
+      gap: clamp(6px, 1.5vw, 14px);
+      width: 100%;
     }
     .buttons-label {
       text-align: center;
       color: #555;
-      font-size: clamp(12px, 2.5vw, 18px);
-      margin-top: 8px;
-      position: relative;
-      z-index: 10;
+      font-size: clamp(11px, 2vw, 16px);
     }
 
     .pup-btn {
-      width: clamp(65px, 15vw, 100px);
-      height: clamp(65px, 15vw, 100px);
-      border: 5px solid #fff;
+      width: clamp(48px, 13vw, 90px);
+      height: clamp(48px, 13vw, 90px);
+      border: 4px solid #fff;
       border-radius: 50%;
       cursor: pointer;
       display: flex;
@@ -175,11 +174,11 @@
     }
 
     .pup-btn .paw-icon {
-      font-size: clamp(30px, 7vw, 50px);
+      font-size: clamp(20px, 5vw, 36px);
       line-height: 1;
     }
     .pup-btn .label {
-      font-size: clamp(12px, 3vw, 20px);
+      font-size: clamp(8px, 2vw, 14px);
       font-weight: bold;
       color: #fff;
       text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
@@ -429,13 +428,10 @@
 
     /* paw prints walking animation */
     .paw-prints {
-      position: relative;
       width: 100%;
-      height: 40px;
-      z-index: 5;
+      height: 30px;
       pointer-events: none;
       overflow: hidden;
-      margin-top: 4px;
     }
     .paw-print {
       position: absolute;
@@ -454,51 +450,53 @@
     <div class="cloud"></div>
   </div>
 
-  <!-- Paw prints along the bottom -->
-  <div class="paw-prints" id="pawPrints"></div>
+  <div class="page-layout">
+    <!-- Title -->
+    <div class="title">
+      <h1>PAW PATROL</h1>
+      <p>Say a pup's name to call them!</p>
+    </div>
 
-  <!-- Title -->
-  <div class="title">
-    <h1>PAW PATROL</h1>
-    <p>Say a pup's name to call them!</p>
-  </div>
+    <!-- Microphone -->
+    <div class="mic-area">
+      <div class="mic-btn" id="micBtn" onclick="toggleListening()" role="button" tabindex="0">
+        &#127908;
+      </div>
+      <div class="mic-label" id="micLabel">Tap to start listening</div>
+      <div class="heard-word" id="heardWord"></div>
+    </div>
 
-  <!-- Microphone -->
-  <div class="mic-area">
-    <div class="mic-btn" id="micBtn" onclick="toggleListening()" role="button" tabindex="0">
-      &#127908;
+    <!-- Tap buttons - all 6 in one row -->
+    <div class="buttons-label">or tap a pup:</div>
+    <div class="buttons">
+      <div class="pup-btn" id="btn-chase" onclick="showPup('chase')" role="button" tabindex="0">
+        <span class="paw-icon">&#128054;</span>
+        <span class="label">CHASE</span>
+      </div>
+      <div class="pup-btn" id="btn-marshall" onclick="showPup('marshall')" role="button" tabindex="0">
+        <span class="paw-icon">&#128021;</span>
+        <span class="label">MARSHALL</span>
+      </div>
+      <div class="pup-btn" id="btn-rubble" onclick="showPup('rubble')" role="button" tabindex="0">
+        <span class="paw-icon">&#128054;</span>
+        <span class="label">RUBBLE</span>
+      </div>
+      <div class="pup-btn" id="btn-skye" onclick="showPup('skye')" role="button" tabindex="0">
+        <span class="paw-icon">&#128021;</span>
+        <span class="label">SKYE</span>
+      </div>
+      <div class="pup-btn" id="btn-rocky" onclick="showPup('rocky')" role="button" tabindex="0">
+        <span class="paw-icon">&#128054;</span>
+        <span class="label">ROCKY</span>
+      </div>
+      <div class="pup-btn" id="btn-zuma" onclick="showPup('zuma')" role="button" tabindex="0">
+        <span class="paw-icon">&#128021;</span>
+        <span class="label">ZUMA</span>
+      </div>
     </div>
-    <div class="mic-label" id="micLabel">Tap to start listening</div>
-    <div class="heard-word" id="heardWord"></div>
-  </div>
 
-  <!-- Fallback tap buttons -->
-  <div class="buttons-label">or tap a pup:</div>
-  <div class="buttons">
-    <div class="pup-btn" id="btn-chase" onclick="showPup('chase')" role="button" tabindex="0">
-      <span class="paw-icon">&#128054;</span>
-      <span class="label">CHASE</span>
-    </div>
-    <div class="pup-btn" id="btn-marshall" onclick="showPup('marshall')" role="button" tabindex="0">
-      <span class="paw-icon">&#128021;</span>
-      <span class="label">MARSHALL</span>
-    </div>
-    <div class="pup-btn" id="btn-rubble" onclick="showPup('rubble')" role="button" tabindex="0">
-      <span class="paw-icon">&#128054;</span>
-      <span class="label">RUBBLE</span>
-    </div>
-    <div class="pup-btn" id="btn-skye" onclick="showPup('skye')" role="button" tabindex="0">
-      <span class="paw-icon">&#128021;</span>
-      <span class="label">SKYE</span>
-    </div>
-    <div class="pup-btn" id="btn-rocky" onclick="showPup('rocky')" role="button" tabindex="0">
-      <span class="paw-icon">&#128054;</span>
-      <span class="label">ROCKY</span>
-    </div>
-    <div class="pup-btn" id="btn-zuma" onclick="showPup('zuma')" role="button" tabindex="0">
-      <span class="paw-icon">&#128021;</span>
-      <span class="label">ZUMA</span>
-    </div>
+    <!-- Paw prints at the bottom -->
+    <div class="paw-prints" id="pawPrints"></div>
   </div>
 
   <!-- Stage overlay -->
