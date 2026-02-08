@@ -967,6 +967,15 @@
           </div>
         `;
         playBabySound();
+        // Speak the story aloud
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(story);
+          utterance.rate = 0.85;
+          utterance.pitch = 1.2;
+          utterance.volume = 1;
+          window.speechSynthesis.speak(utterance);
+        }
       }
 
       stage.classList.add('visible');
@@ -1007,6 +1016,7 @@
 
     function closeStage() {
       document.getElementById('stage').classList.remove('visible');
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     }
 
     function handleStageClick(e) {
