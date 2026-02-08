@@ -947,18 +947,13 @@
         scene.classList.add('baby-scene');
         badge.textContent = '\uD83D\uDCD6';
         const stories = [
-          { text: "એક નાનકડું કુતરું બગીચામાં સોનાનું હાડકું શોધ્યું. તેણે બધા મિત્રો સાથે વહેંચ્યું, અને બધાએ ખૂબ મજા કરી! સમાપ્ત.", lang: "gu-IN" },
-          { text: "એક નાનો તારો આકાશમાંથી બગીચામાં પડ્યો. એક નાના છોકરાએ તેને ઉપાડ્યો અને તે ચમકતી પતંગિયું બની ગયો. તેઓ સાથે આખી દુનિયામાં ઉડ્યા! સમાપ્ત.", lang: "gu-IN" },
-          { text: "એક નાનું રીંછ ઊંઘી શકતું નહોતું. તેની મમ્મીએ ચંદ્ર વિશે ગીત ગાયું, અને તેણે વાદળો સાથે નાચવાનું સપનું જોયું! સમાપ્ત.", lang: "gu-IN" },
-          { text: "एक छोटा कुत्रा बागेत सोन्याचे हाड शोधत होता. त्याने ते सगळ्या मित्रांसोबत वाटले, आणि सगळ्यांनी खूप मजा केली! समाप्त.", lang: "mr-IN" },
-          { text: "एक लहानसा तारा आकाशातून बागेत पडला. एका लहान मुलाने तो उचलला आणि तो चमकणारे फुलपाखरू बनले. ते दोघे मिळून सगळ्या जगात उडाले! समाप्त.", lang: "mr-IN" },
-          { text: "एक लहान अस्वल झोपू शकत नव्हते. त्याच्या आईने चंद्राबद्दल गाणे गायले, आणि त्याने ढगांसोबत नाचण्याचे स्वप्न पाहिले! समाप्त.", lang: "mr-IN" },
-          { text: "એક હિંમતવાન નાની માછલી સમુદ્રના તળિયે ગઈ અને ત્યાં બિસ્કિટથી ભરેલો ખજાનો મળ્યો! તેણે બધા માછલી મિત્રો સાથે પાર્ટી કરી! સમાપ્ત.", lang: "gu-IN" },
-          { text: "एक पावसाळ्याच्या दिवशी, एका लहान बदकाला इंद्रधनुष्याचे डबके सापडले. प्रत्येक वेळी त्यात उडी मारली, तो वेगळ्या रंगाचा होत गेला! लाल, निळा, हिरवा! सगळे प्राणी पण उड्या मारायला आले! समाप्त.", lang: "mr-IN" }
+          "Once upon a time, a little puppy found a golden bone in the park. He shared it with all his friends, and they had the best day ever. The end.",
+          "A tiny star fell from the sky into a garden. A little boy picked it up and it turned into a glowing butterfly. They flew around the world together. The end.",
+          "There was a baby bear who could not sleep. His mama sang him a song about the moon, and he dreamed of dancing with the clouds all night. The end.",
+          "A brave little fish swam to the bottom of the ocean and found a treasure chest full of cookies. He brought them home and had a party with all his fishy friends. The end.",
+          "One rainy day, a little duck found a rainbow puddle. Every time he jumped in it, he turned a different color. Red, blue, green. All the animals came to jump too. The end."
         ];
-        const picked = stories[Math.floor(Math.random() * stories.length)];
-        const story = picked.text;
-        const storyLang = picked.lang;
+        const story = stories[Math.floor(Math.random() * stories.length)];
         content.innerHTML = `
           <div class="tool-item">\uD83D\uDCD6</div>
           <div class="tool-item">\u2728</div>
@@ -975,9 +970,8 @@
         // Speak the story aloud
         if ('speechSynthesis' in window) {
           window.speechSynthesis.cancel();
-          const spokenText = story.replace(/[!?।]/g, '.').replace(/["""\-:;]/g, ' ');
-          const utterance = new SpeechSynthesisUtterance(spokenText);
-          utterance.lang = storyLang;
+          const utterance = new SpeechSynthesisUtterance(story);
+          utterance.lang = 'en-US';
           utterance.rate = 0.65;
           utterance.pitch = 1.1;
           utterance.volume = 1;
