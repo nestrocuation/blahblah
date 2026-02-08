@@ -140,7 +140,7 @@
       justify-content: center;
       gap: clamp(8px, 2vw, 16px);
       margin-top: clamp(4px, 1vh, 10px);
-      padding: 0 10px;
+      padding: 0 10px 10px;
     }
     .buttons-label {
       text-align: center;
@@ -429,20 +429,19 @@
 
     /* paw prints walking animation */
     .paw-prints {
-      position: fixed;
-      bottom: 0;
-      left: 0;
+      position: relative;
       width: 100%;
-      height: 120px;
+      height: 40px;
       z-index: 5;
       pointer-events: none;
       overflow: hidden;
+      margin-top: 4px;
     }
     .paw-print {
       position: absolute;
-      font-size: 28px;
+      font-size: 22px;
       opacity: 0.25;
-      bottom: 10px;
+      bottom: 4px;
     }
   </style>
 </head>
